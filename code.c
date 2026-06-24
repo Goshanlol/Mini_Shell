@@ -2,10 +2,6 @@
 
 int status = 0;
 
-char **g_history;
-int g_history_size = 0;
-
-
 type_builtin global_builtin[] =
 {
 	{.builtin_name="cd", .foo=cmd_cd},
@@ -32,13 +28,22 @@ char *read_line(void)
 }
 
 
-void history_inc(char *line)
+char *history_save(char *line)
 {
-	char *copy = Malloc(strlen(line) + 1);
-	strcpy(copy, line);
+	FILE *file;
 
-	g_history[g_history_size] = copy;
-	g_history_size++;
+	file = fopen("command_history.txt", "a");
+
+	if (file == NULL)
+	{
+		perror("Could not open or create the file\n");
+	}
+	else
+	{
+		fprintf(file, "%s", line);
+		fflush(file);
+	}
+	fclose(file);
 }
 
 
@@ -114,14 +119,12 @@ int main()
 	char *line;
 	char **argv;
 
-	g_history = Malloc(BUFSIZ * sizeof(*g_history));
-
 	// REPL
 	// LOOP WHILE READ LINE
 	while((line = read_line()))
 	{
 		//SAVE TO HISTORY
-		history_inc(line);
+		history_save(line);
 
 		// EVALUATE
 		argv = parsing(line);

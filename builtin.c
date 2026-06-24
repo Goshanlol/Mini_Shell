@@ -16,6 +16,8 @@ extern char **environ;
 
 int cmd_env(char **argv)
 {
+	(void)argv;
+
     for (char **current = environ; *current; current++)
     {
         puts(*current);
@@ -42,12 +44,21 @@ int cmd_echo(char **argv)
 int cmd_history(char **argv)
 {
     (void)argv;
+    FILE *file;
+    char line[2048];
 
-    for (int i = 0; i < g_history_size; i++)
+	file = fopen("command_history.txt", "r");
+
+    if (file == NULL)
     {
-        p("%d %s", i + 1, g_history[i]);
-    }
-    return (0);
+		perror("Could not open the file\n");
+	}
+
+	for (int i = 0; fgets(line, sizeof line, file) != NULL; i++)
+	{
+		printf("%d %s", i + 1, line);
+	}
+	fclose(file);
 }
 
 
