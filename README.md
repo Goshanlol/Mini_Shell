@@ -33,9 +33,6 @@ These commands are implemented internally in the shell:
 
 They replicate simplified behavior of their Unix equivalents
 
-The `history` command stores all executed commands during the current session.
-History is not saved between program runs.
-
 ## Features
 
 - Command execution using PATH
