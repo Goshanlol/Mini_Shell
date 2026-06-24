@@ -42,12 +42,6 @@ History is not saved between program runs.
 - Simple command parsing
 - Environment variable expansion ($VAR)
 
-## Limitations
-- No pipes or redirections
-- No job control
-- No persistent history file
-- Simplified parsing compared to Bash
-
 ## How to install this project
 1. Clone this project
 2. Build the project:
