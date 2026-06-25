@@ -56,7 +56,7 @@ int cmd_history(char **argv)
 
 	for (int i = 0; fgets(line, sizeof line, file) != NULL; i++)
 	{
-		printf("%d %s", i + 1, line);
+		p("%d %s", i + 1, line);
 	}
 	fclose(file);
 }

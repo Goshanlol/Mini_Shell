@@ -80,7 +80,7 @@ char **parsing(char *line)
 }
 
 
-void execution(char **argv)
+void general_exec(char **argv)
 {
 	pid_t pid = Fork();
 
@@ -95,7 +95,7 @@ void execution(char **argv)
 }
 
 
-void cmd_exec(char **argv)
+void builtin_exec(char **argv)
 {
 	int i;
 	const char *curr;
@@ -110,7 +110,7 @@ void cmd_exec(char **argv)
         }
         ++i;
     }
-    execution(argv);
+    general_exec(argv);
 }
 
 
@@ -130,7 +130,7 @@ int main()
 		argv = parsing(line);
 
 		// PRINT
-		cmd_exec(argv);
+		builtin_exec(argv);
 
 		free(line);
 		free(argv);
