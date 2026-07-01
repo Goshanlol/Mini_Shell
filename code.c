@@ -47,39 +47,6 @@ char *history_save(char *line)
 }
 
 
-char **parsing(char *line)
-{
-    char **tokens;
-    unsigned int position;
-    size_t bufsize = BUFSIZ;
-
-    tokens = Malloc(bufsize * sizeof *tokens);
-    position = 0;
-
-    for (char *token = strtok(line, DEL); token; token = strtok(NULL, DEL))
-    {
-        tokens[position++] = token;
-        if (position >= bufsize)
-        {
-            bufsize *= 2;
-            tokens = Realloc(tokens, bufsize * sizeof(*tokens));
-        }
-    }
-    tokens[position] = NULL;
-
-	for (int i = 1; tokens[i] != NULL; i++)
-	{
-		const char *dollar_var = strchr(tokens[i], '$');
-
-		if (dollar_var != NULL)
-		{
-			tokens[i] = getenv(dollar_var + 1);
-		}
-	}
-	return (tokens);
-}
-
-
 void general_exec(char **argv)
 {
 	pid_t pid = Fork();

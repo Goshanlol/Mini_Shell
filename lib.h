@@ -10,6 +10,7 @@
 #include <sysexits.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <ctype.h>
 
 extern char **g_history;
 extern int g_history_size;
@@ -22,6 +23,8 @@ typedef struct struct_builtin
     const char *builtin_name;
     int (*foo)(char**);
 } type_builtin;
+
+char **parsing(char *);
 
 ssize_t Getline(char **, size_t *, FILE *);
 void *Malloc(size_t);
