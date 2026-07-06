@@ -33,6 +33,16 @@ These commands are implemented internally in the shell:
 
 They replicate simplified behavior of their Unix equivalents
 
+## Parser Features
+- [x] Environment variables (`$VAR`)
+- [ ] Single quotes (`'`)
+- [ ] Double quotes (`"`)
+- [ ] Escape character (`\`)
+- [ ] Pipes (`|`)
+- [ ] Redirections (`<`, `>`, `>>`)
+- [ ] Here-document (`<<`)
+
+
 ## How to install this project
 1. Clone this project
 2. Build the project:
