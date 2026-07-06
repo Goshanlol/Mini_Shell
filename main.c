@@ -36,7 +36,7 @@ char *history_save(char *line)
 
 	if (file == NULL)
 	{
-		perror("Could not open or create the file\n");
+		perror("fopen");
 	}
 	else
 	{
@@ -44,6 +44,7 @@ char *history_save(char *line)
 		fflush(file);
 	}
 	fclose(file);
+	return(0);
 }
 
 

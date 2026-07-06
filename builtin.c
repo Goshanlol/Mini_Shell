@@ -59,6 +59,7 @@ int cmd_history(char **argv)
 		p("%d %s", i + 1, line);
 	}
 	fclose(file);
+	return(0);
 }
 
 
