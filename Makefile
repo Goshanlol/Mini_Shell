@@ -3,7 +3,7 @@ NAME = minishell
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror
 
-SRCS = builtin.c code.c wrappers.c
+SRCS = builtin.c main.c wrappers.c parser.c
 OBJS = $(SRCS:.c=.o)
 
 all: $(NAME)

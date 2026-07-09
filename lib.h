@@ -25,7 +25,7 @@ typedef struct struct_builtin
 } type_builtin;
 
 char **parsing(char *);
-void var_expand(char **);
+char *read_line(void);
 
 ssize_t Getline(char **, size_t *, FILE *);
 void *Malloc(size_t);

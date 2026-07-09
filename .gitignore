@@ -1,2 +1,6 @@
 *.o
 command_history.txt
+a.out
+r
+m
+minishell

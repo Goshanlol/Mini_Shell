@@ -16,25 +16,35 @@ char **parsing(char *line)
 		switch (line[i])
 		{
 			case '$':
-				token[position] = line[i];
-				position++;
+				char var_buffer[256];
+				unsigned int var_pos = 0;
+
+				var_buffer[var_pos] = line[i];
+				var_pos++;
 				i++;
+
 				while (line[i] != '\0' && !isspace((unsigned char)line[i]))
 				{
 					if (isupper(line[i]) || isdigit(line[i]) || line[i] == '_')
 					{
-						token[position] = line[i];
-						position++;
+						var_buffer[var_pos] = line[i];
+						var_pos++;
 						i++;
 					}
 					else
 					{
 						fprintf(stderr, "Parser: invalid character in an env var\n");
-						break;
+						read_line();
 					}
 				}
 				i--;
-				break;
+				const char *dollar_var = getenv(var_buffer + 1);
+				for (int d_pos = 0; dollar_var[d_pos] != '\0'; d_pos++)
+				{
+					token[position] = dollar_var[d_pos];
+					position++;
+				}
+			break;
 
 			default:
 				if (isspace((unsigned char)line[i]))
@@ -74,20 +84,5 @@ char **parsing(char *line)
     	}
 	}
 	tokens[n] = NULL;
-	var_expand(tokens);
 	return(tokens);
-}
-
-
-void var_expand(char **tokens)
-{
-	for (int i = 1; tokens[i] != NULL; i++)
-	{
-		const char *dollar_var = strchr(tokens[i], '$');
-
-		if (dollar_var != NULL)
-		{
-			tokens[i] = getenv(dollar_var + 1);
-		}
-	}
 }
