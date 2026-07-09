@@ -96,6 +96,11 @@ int main()
 
 		// EVALUATE
 		argv = parsing(line);
+		if (argv == NULL)
+		{
+			free(line);
+			continue;
+		}
 
 		// PRINT
 		builtin_exec(argv);

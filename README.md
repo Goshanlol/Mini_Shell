@@ -36,7 +36,7 @@ They replicate simplified behavior of their Unix equivalents
 ## Parser Features
 - [x] Environment variables (`$VAR`)
 - [ ] Single quotes (`'`)
-- [ ] Double quotes (`"`)
+- [x] Double quotes (`"`)
 - [ ] Escape character (`\`)
 - [ ] Pipes (`|`)
 - [ ] Redirections (`<`, `>`, `>>`)
