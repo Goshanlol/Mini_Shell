@@ -44,11 +44,15 @@ char **parsing(char *line)
 					token[position] = dollar_var[d_pos];
 					position++;
 				}
-			break;
+				break;
 
 			default:
 				if (isspace((unsigned char)line[i]))
 				{
+					while (isspace(line[i+1]))
+					{
+						i++;
+					}
 					token[position] = '\0';
 
 					tokens[n] = Malloc(strlen(token) + 1);

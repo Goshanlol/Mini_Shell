@@ -66,7 +66,6 @@ Since it's a learning project, you can use it however you want.
 As I'm a beginner in C, there could possibly be a lot of bugs, so please share with me if you've found one!
 
 ## Known issues
-Can't handle multiple whitespaces between commands because of the parser
 
 ## Currently working on
 Enhancing parser so it can handle different cases like $, <>, | etc.
