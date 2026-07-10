@@ -42,7 +42,24 @@ char **parsing(char *line)
 						i++;
 					}
 				}
+				break;
+
+			case '\'':
 				i++;
+				while (line[i] != '\'')
+				{
+					if (line[i] == '\0')
+					{
+						fprintf(stderr, "Parser: didn't find closing quote\n");
+						return(NULL);
+					}
+					else
+					{
+						token[tok_pos] = line[i];
+						tok_pos++;
+						i++;
+					}
+				}
 				break;
 
 			case '$':
