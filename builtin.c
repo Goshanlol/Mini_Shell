@@ -6,7 +6,7 @@ int cmd_cd(char **argv)
 
 	if (!path)
 	{
-		path = getenv("HOME");
+		path = Getenv("HOME");
 	}
 	return (Chdir(path));
 }
@@ -51,7 +51,7 @@ int cmd_history(char **argv)
 
     if (file == NULL)
     {
-		perror("Could not open the file\n");
+		perror("fopen");
 	}
 
 	for (int i = 0; fgets(line, sizeof line, file) != NULL; i++)

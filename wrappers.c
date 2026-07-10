@@ -20,6 +20,31 @@ ssize_t Getline(char **line, size_t *size, FILE *stream)
 }
 
 
+char *Getcwd(char *buf, size_t size)
+{
+	char *ptr = getcwd(buf, size);
+
+	if (ptr == NULL)
+	{
+		perror("getcwd");
+		exit(EXIT_FAILURE);
+	}
+	return(ptr);
+}
+
+
+char *Getenv(const char *name)
+{
+	char *ptr = getenv(name);
+
+	if (ptr == NULL)
+	{
+		return("");
+	}
+	return(ptr);
+}
+
+
 void *Malloc(size_t size)
 {
 	void *ptr = malloc(size);
@@ -63,7 +88,7 @@ void Execvp(const char *file, char *const argv[])
 {
 	if (!file || !argv || !argv[0])
 	{
-		fprintf(stderr, "Execvp: invalid arguments\n");
+		fp(stderr, "Execvp: invalid arguments\n");
 		exit(EXIT_FAILURE);
 	}
 	if (execvp(file, argv) == -1)
@@ -80,7 +105,7 @@ pid_t Wait(int *status)
 
 	if (!status)
 	{
-		fprintf(stderr, "Wait: status argument required\n");
+		fp(stderr, "Wait: status argument required\n");
 		return (-1);
 	}
 
@@ -98,17 +123,9 @@ int Chdir(const char *path)
 {
     if (chdir(path) == 0)
         return 0;
-
-    if (errno == ENOENT)
-        p("No such file or directory\n");
-    else if (errno == EACCES)
-        p("Permission denied\n");
-    else if (errno == ELOOP)
-        p("Too many symbolic links\n");
-    else if (errno == ENOTDIR)
-        p("Not a directory\n");
     else
-        p("chdir failed\n");
-
-    return 1;
+    {
+    	perror("chdir");
+    	return(1);
+    }
 }

@@ -16,54 +16,21 @@ char **parsing(char *line)
 		switch (line[i])
 		{
 			case '"':
-				i++;
-				while (line[i] != '"')
+				if (double_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
-					if (line[i] != '$')
-					{
-						if (line[i] == '\0')
-						{
-							fprintf(stderr, "Parser: didn't find closing quote\n");
-							return(NULL);
-						}
-						else
-						{
-							token[tok_pos] = line[i];
-							tok_pos++;
-							i++;
-						}
-					}
-					else
-					{
-						if (var_expansion(line, token, &tok_pos, &i) != 0)
-						{
-							return(NULL);
-						}
-						i++;
-					}
+					return(NULL);
 				}
 				break;
 
 			case '\'':
-				i++;
-				while (line[i] != '\'')
+				if (single_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
-					if (line[i] == '\0')
-					{
-						fprintf(stderr, "Parser: didn't find closing quote\n");
-						return(NULL);
-					}
-					else
-					{
-						token[tok_pos] = line[i];
-						tok_pos++;
-						i++;
-					}
+					return(NULL);
 				}
 				break;
 
 			case '$':
-				if (var_expansion(line, token, &tok_pos, &i) != 0)
+				if (var_expansion_state(line, token, &tok_pos, &i) != 0)
 				{
 					return(NULL);
 				}
@@ -115,7 +82,60 @@ char **parsing(char *line)
 }
 
 
-int var_expansion(char *line, char *token, unsigned int *tok_pos, int *i)
+int double_quotes_state(char *line, char *token, unsigned int *tok_pos, int *i)
+{
+	(*i)++;
+	while (line[*i] != '"')
+	{
+		if (line[*i] != '$')
+		{
+			if (line[*i] == '\0')
+			{
+				fp(stderr, "Parser: didn't find closing quote\n");
+				return(1);
+			}
+			else
+			{
+				token[*tok_pos] = line[*i];
+				(*tok_pos)++;
+				(*i)++;
+			}
+		}
+		else
+		{
+			if (var_expansion_state(line, token, tok_pos, i) != 0)
+			{
+				return(1);
+			}
+			(*i)++;
+		}
+	}
+	return(0);
+}
+
+
+int single_quotes_state(char *line, char *token, unsigned int *tok_pos, int *i)
+{
+	(*i)++;
+	while (line[*i] != '\'')
+	{
+		if (line[*i] == '\0')
+		{
+			fp(stderr, "Parser: didn't find closing quote\n");
+			return(1);
+		}
+		else
+		{
+			token[*tok_pos] = line[*i];
+			(*tok_pos)++;
+			(*i)++;
+		}
+	}
+	return(0);
+}
+
+
+int var_expansion_state(char *line, char *token, unsigned int *tok_pos, int *i)
 {
 	if (line[*i] == '$')
 	{
@@ -134,25 +154,17 @@ int var_expansion(char *line, char *token, unsigned int *tok_pos, int *i)
 			}
 			else
 			{
-				fprintf(stderr, "Parser: invalid character in an env var\n");
+				fp(stderr, "Parser: invalid character in an env var\n");
 				return(1);
 			}
 		}
 		(*i)--;
 		var_buffer[var_pos] = '\0';
-		const char *dollar_var = getenv(var_buffer + 1);
-		if (dollar_var != NULL)
+		const char *dollar_var = Getenv(var_buffer + 1);
+		for (int d_pos = 0; dollar_var[d_pos] != '\0'; d_pos++)
 		{
-			for (int d_pos = 0; dollar_var[d_pos] != '\0'; d_pos++)
-			{
-				token[*tok_pos] = dollar_var[d_pos];
-				(*tok_pos)++;
-			}
-		}
-		else
-		{
-			fprintf(stderr, "getenv: returned NULL\n");
-			return(1);
+			token[*tok_pos] = dollar_var[d_pos];
+			(*tok_pos)++;
 		}
 	}
 	return(0);

@@ -19,7 +19,7 @@ char *read_line(void)
 	size_t size = 0;
 	char cwd[4096];
 
-	getcwd(cwd, sizeof(cwd));
+	Getcwd(cwd, sizeof(cwd));
 
 	p("%s $>", cwd);
 	Getline(&line, &size, stdin);

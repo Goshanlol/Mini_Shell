@@ -16,6 +16,7 @@ extern char **g_history;
 extern int g_history_size;
 
 #define DEL "\n\t\v\f\r "
+#define fp(...) fprintf(__VA_ARGS__)
 #define p(...) printf(__VA_ARGS__)
 
 typedef struct struct_builtin
@@ -25,10 +26,15 @@ typedef struct struct_builtin
 } type_builtin;
 
 char **parsing(char *);
-int var_expansion(char *, char *, unsigned int *, int *);
+int double_quotes_state(char *, char *, unsigned int *, int *);
+int single_quotes_state(char *, char *, unsigned int *, int *);
+int var_expansion_state(char *, char *, unsigned int *, int *);
+
 char *read_line(void);
 
 ssize_t Getline(char **, size_t *, FILE *);
+char *Getcwd(char *, size_t);
+char *Getenv(const char *);
 void *Malloc(size_t);
 void *Realloc(void *, size_t);
 pid_t Fork(void);
