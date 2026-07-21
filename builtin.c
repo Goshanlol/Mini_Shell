@@ -1,8 +1,8 @@
 #include "lib.h"
 
-int cmd_cd(char **argv)
+int cmd_cd(command *argv)
 {
-	const char *path = argv[1];
+	const char *path = argv->tokens[1];
 
 	if (!path)
 	{
@@ -14,7 +14,7 @@ int cmd_cd(char **argv)
 
 extern char **environ;
 
-int cmd_env(char **argv)
+int cmd_env(command *argv)
 {
 	(void)argv;
 
@@ -26,12 +26,12 @@ int cmd_env(char **argv)
 }
 
 
-int cmd_echo(char **argv)
+int cmd_echo(command *argv)
 {
-	for (int i = 1; argv[i] != NULL; i++)
+	for (int i = 1; argv->tokens[i] != NULL; i++)
 	{
-		p("%s", argv[i]);
-		if (argv[i+1] != NULL)
+		p("%s", argv->tokens[i]);
+		if (argv->tokens[i+1] != NULL)
 		{
 			p(" ");
 		}
@@ -41,7 +41,7 @@ int cmd_echo(char **argv)
 }
 
 
-int cmd_history(char **argv)
+int cmd_history(command *argv)
 {
     (void)argv;
     FILE *file;
@@ -52,6 +52,7 @@ int cmd_history(char **argv)
     if (file == NULL)
     {
 		perror("fopen");
+		return(1);
 	}
 
 	for (int i = 0; fgets(line, sizeof line, file) != NULL; i++)
@@ -63,7 +64,7 @@ int cmd_history(char **argv)
 }
 
 
-int cmd_exit(char **argv)
+int cmd_exit(command *argv)
 {
 	(void)argv;
 

@@ -11,6 +11,7 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <ctype.h>
+#include <fcntl.h>
 
 extern char **g_history;
 extern int g_history_size;
@@ -19,13 +20,21 @@ extern int g_history_size;
 #define fp(...) fprintf(__VA_ARGS__)
 #define p(...) printf(__VA_ARGS__)
 
+typedef struct
+{
+	char **tokens;
+	char input_file[256];
+	int error;
+} command;
+
 typedef struct struct_builtin
 {
     const char *builtin_name;
-    int (*foo)(char**);
+    int (*foo)(command *);
 } type_builtin;
 
-char **parsing(char *);
+command parsing(char *);
+int left_redirector_state(char *, char *, int *);
 int double_quotes_state(char *, char *, unsigned int *, int *);
 int single_quotes_state(char *, char *, unsigned int *, int *);
 int var_expansion_state(char *, char *, unsigned int *, int *);
@@ -42,10 +51,10 @@ void Execvp(const char *file, char *const argv[]);
 pid_t Wait(int *);
 int Chdir(const char *path);
 
-int cmd_cd(char **);
-int cmd_env(char **);
-int cmd_echo(char **);
-int cmd_history(char **);
-int cmd_exit(char **);
+int cmd_cd(command *);
+int cmd_env(command *);
+int cmd_echo(command *);
+int cmd_history(command *);
+int cmd_exit(command *);
 
 #endif

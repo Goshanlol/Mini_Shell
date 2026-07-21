@@ -34,12 +34,14 @@ These commands are implemented internally in the shell:
 They replicate simplified behavior of their Unix equivalents
 
 ## Parser Features
-- [x] Environment variables (`$VAR`)
-- [x] Single quotes (`'`)
-- [x] Double quotes (`"`)
+- [x] Environment variable expansion (`$VAR`)
+- [x] Single quotes (`'...'`)
+- [x] Double quotes (`"..."`)
 - [ ] Escape character (`\`)
 - [ ] Pipes (`|`)
-- [ ] Redirections (`<`, `>`, `>>`)
+- [x] Input redirection (`<`)
+- [ ] Output redirection (`>`)
+- [ ] Append redirection (`>>`)
 - [ ] Here-document (`<<`)
 
 

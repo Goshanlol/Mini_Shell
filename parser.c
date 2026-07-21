@@ -1,38 +1,51 @@
 #include "lib.h"
 
 
-char **parsing(char *line)
+command parsing(char *line)
 {
-	char **tokens;
 	size_t bufsize = BUFSIZ;
 	unsigned int tok_pos = 0;
 	unsigned int n = 0;
 	char token[256];
 
-	tokens = Malloc(bufsize * sizeof *tokens);
+	command args;
+	args.tokens = Malloc(bufsize * sizeof *args.tokens);
+	args.input_file[0] = '\0';
+	args.error = 0;
 
 	for (int i = 0; line[i] != '\0'; i++)
 	{
 		switch (line[i])
 		{
+			case '<':
+				if (left_redirector_state(line, args.input_file, &i) != 0)
+				{
+					args.error = 1;
+					return args;
+				}
+				break;
+
 			case '"':
 				if (double_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
-					return(NULL);
+					args.error = 1;
+					return args;
 				}
 				break;
 
 			case '\'':
 				if (single_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
-					return(NULL);
+					args.error = 1;
+					return args;
 				}
 				break;
 
 			case '$':
 				if (var_expansion_state(line, token, &tok_pos, &i) != 0)
 				{
-					return(NULL);
+					args.error = 1;
+					return args;
 				}
 				break;
 
@@ -45,14 +58,14 @@ char **parsing(char *line)
 					}
 					token[tok_pos] = '\0';
 
-					tokens[n] = Malloc(strlen(token) + 1);
-					strcpy(tokens[n], token);
+					args.tokens[n] = Malloc(strlen(token) + 1);
+					strcpy(args.tokens[n], token);
 					n++;
 
 					if (n >= bufsize)
         			{
             			bufsize *= 2;
-            			tokens = Realloc(tokens, bufsize * sizeof(*tokens));
+            			args.tokens = Realloc(args.tokens, bufsize * sizeof(*args.tokens));
         			}
         			memset(token, 0, sizeof(token));
         			tok_pos = 0;
@@ -68,17 +81,38 @@ char **parsing(char *line)
 	{
 		token[tok_pos] = '\0';
 
-		tokens[n] = Malloc(strlen(token) + 1);
-		strcpy(tokens[n], token);
+		args.tokens[n] = Malloc(strlen(token) + 1);
+		strcpy(args.tokens[n], token);
 		n++;
 		if (n >= bufsize)
     	{
     		bufsize *= 2;
-        	tokens = Realloc(tokens, bufsize * sizeof(*tokens));
+        	args.tokens = Realloc(args.tokens, bufsize * sizeof(*args.tokens));
     	}
 	}
-	tokens[n] = NULL;
-	return(tokens);
+	args.tokens[n] = NULL;
+	return args;
+}
+
+
+int left_redirector_state(char *line, char *input_file, int *i)
+{
+	(*i)++;
+	unsigned int if_pos = 0;
+	while (isspace(line[*i]))
+	{
+		(*i)++;
+	}
+	while (line[*i] != '\0' && !isspace(line[*i]))
+	{
+		input_file[if_pos] = line[*i];
+		if_pos++;
+		(*i)++;
+	}
+	input_file[if_pos] = '\0';
+	if (input_file[0] == '\0')
+		return(1);
+	return(0);
 }
 
 
@@ -104,9 +138,7 @@ int double_quotes_state(char *line, char *token, unsigned int *tok_pos, int *i)
 		else
 		{
 			if (var_expansion_state(line, token, tok_pos, i) != 0)
-			{
 				return(1);
-			}
 			(*i)++;
 		}
 	}
