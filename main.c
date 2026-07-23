@@ -47,49 +47,77 @@ void history_save(char *line)
 }
 
 
-int general_exec(command *argv)
+int apply_redirections(command *argv)
+{
+	if (argv->input_file[0] != '\0')
+	{
+	 	int if_desc = open(argv->input_file, O_RDONLY);
+		if (if_desc < 0)
+		{
+			perror("open");
+			return(1);
+		}
+		if ((dup2(if_desc, STDIN_FILENO)) == -1)
+		{
+			perror("dup2");
+			close(if_desc);
+			return(1);
+		}
+		close(if_desc);
+	}
+	if (argv->output_file[0] != '\0')
+	{
+ 		int of_desc = open(argv->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+		if (of_desc < 0)
+		{
+			perror("open");
+			return(1);
+		}
+		if ((dup2(of_desc, STDOUT_FILENO)) == -1)
+		{
+			perror("dup2");
+			close(of_desc);
+			return(1);
+		}
+		close(of_desc);
+	}
+	return(0);
+}
+
+
+void general_exec(command *argv)
 {
 	pid_t pid = Fork();
 
     if (pid == 0)
-	{
-		if (argv->input_file[0] != '\0')
-		{
-	 		int if_desc = open(argv->input_file, O_RDONLY);
-			if (if_desc < 0)
-			{
-				perror("open");
-				return(1);
-			}
-			if ((dup2(if_desc, STDIN_FILENO)) == -1)
-			{
-				perror("dup2");
-				close(if_desc);
-				return(1);
-			}
-			close(if_desc);
-		}
-		Execvp(argv->tokens[0], argv->tokens);
-    }
-    else
     {
+    	apply_redirections(argv);
+		Execvp(argv->tokens[0], argv->tokens);
+	}
+    else
     	Wait(&status);
-    }
-    return(0);
 }
 
 
 void builtin_exec(command *argv)
 {
-	int i;
+	int i = 0;
 	const char *curr;
-
-	i = 0;
 	while ((curr = global_builtin[i].builtin_name))
     {
         if (!strcmp(curr, argv->tokens[0]))
         {
+			int org_stdout_desc = dup(STDOUT_FILENO);
+			int org_stdin_desc = dup(STDIN_FILENO);
+			apply_redirections(argv);
+			fflush(stdout);
+
             status = global_builtin[i].foo(argv);
+
+           	dup2(org_stdout_desc, STDOUT_FILENO);
+			dup2(org_stdin_desc, STDIN_FILENO);
+			close(org_stdout_desc);
+			close(org_stdin_desc);
             return;
         }
         ++i;

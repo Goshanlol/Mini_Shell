@@ -40,7 +40,7 @@ They replicate simplified behavior of their Unix equivalents
 - [ ] Escape character (`\`)
 - [ ] Pipes (`|`)
 - [x] Input redirection (`<`)
-- [ ] Output redirection (`>`)
+- [x] Output redirection (`>`)
 - [ ] Append redirection (`>>`)
 - [ ] Here-document (`<<`)
 

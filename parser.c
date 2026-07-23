@@ -11,14 +11,23 @@ command parsing(char *line)
 	command args;
 	args.tokens = Malloc(bufsize * sizeof *args.tokens);
 	args.input_file[0] = '\0';
+	args.output_file[0] = '\0';
 	args.error = 0;
 
 	for (int i = 0; line[i] != '\0'; i++)
 	{
 		switch (line[i])
 		{
+			case '>':
+				if (output_redirector_state(line, args.output_file, &i) != 0)
+				{
+					args.error = 1;
+					return args;
+				}
+				break;
+
 			case '<':
-				if (left_redirector_state(line, args.input_file, &i) != 0)
+				if (input_redirector_state(line, args.input_file, &i) != 0)
 				{
 					args.error = 1;
 					return args;
@@ -95,7 +104,28 @@ command parsing(char *line)
 }
 
 
-int left_redirector_state(char *line, char *input_file, int *i)
+int output_redirector_state(char *line, char *output_file, int *i)
+{
+	(*i)++;
+	unsigned int of_pos = 0;
+	while (isspace(line[*i]))
+	{
+		(*i)++;
+	}
+	while (line[*i] != '\0' && !isspace(line[*i]))
+	{
+		output_file[of_pos] = line[*i];
+		of_pos++;
+		(*i)++;
+	}
+	output_file[of_pos] = '\0';
+	if (output_file[0] == '\0')
+		return(1);
+	return(0);
+}
+
+
+int input_redirector_state(char *line, char *input_file, int *i)
 {
 	(*i)++;
 	unsigned int if_pos = 0;
