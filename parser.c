@@ -21,6 +21,7 @@ command parsing(char *line)
 			case '>':
 				if (output_redirector_state(line, args.output_file, &i) != 0)
 				{
+					args.tokens[n] = NULL;
 					args.error = 1;
 					return args;
 				}
@@ -29,6 +30,7 @@ command parsing(char *line)
 			case '<':
 				if (input_redirector_state(line, args.input_file, &i) != 0)
 				{
+					args.tokens[n] = NULL;
 					args.error = 1;
 					return args;
 				}
@@ -37,6 +39,7 @@ command parsing(char *line)
 			case '"':
 				if (double_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
+					args.tokens[n] = NULL;
 					args.error = 1;
 					return args;
 				}
@@ -45,6 +48,7 @@ command parsing(char *line)
 			case '\'':
 				if (single_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
+					args.tokens[n] = NULL;
 					args.error = 1;
 					return args;
 				}
@@ -53,6 +57,7 @@ command parsing(char *line)
 			case '$':
 				if (var_expansion_state(line, token, &tok_pos, &i) != 0)
 				{
+					args.tokens[n] = NULL;
 					args.error = 1;
 					return args;
 				}
@@ -106,7 +111,14 @@ command parsing(char *line)
 
 int output_redirector_state(char *line, char *output_file, int *i)
 {
-	(*i)++;
+	if (output_file[0] != '\0')
+	{
+		fp(stderr, "Can't handle second output redirector(>)\n");
+		return(1);
+	}
+	else
+		(*i)++;
+
 	unsigned int of_pos = 0;
 	while (isspace(line[*i]))
 	{
@@ -127,7 +139,14 @@ int output_redirector_state(char *line, char *output_file, int *i)
 
 int input_redirector_state(char *line, char *input_file, int *i)
 {
-	(*i)++;
+	if (input_file[0] != '\0')
+	{
+		fp(stderr, "Can't handle second input redirector(<)\n");
+		return(1);
+	}
+	else
+		(*i)++;
+
 	unsigned int if_pos = 0;
 	while (isspace(line[*i]))
 	{
