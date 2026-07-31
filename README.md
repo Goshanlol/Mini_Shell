@@ -41,7 +41,7 @@ They replicate simplified behavior of their Unix equivalents
 - [ ] Pipes (`|`)
 - [x] Input redirection (`<`)
 - [x] Output redirection (`>`)
-- [ ] Append redirection (`>>`)
+- [x] Append redirection (`>>`)
 - [ ] Here-document (`<<`)
 
 

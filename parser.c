@@ -12,6 +12,7 @@ command parsing(char *line)
 	args.tokens = Malloc(bufsize * sizeof *args.tokens);
 	args.input_file[0] = '\0';
 	args.output_file[0] = '\0';
+	args.append_file[0] = '\0';
 	args.error = 0;
 
 	for (int i = 0; line[i] != '\0'; i++)
@@ -19,7 +20,7 @@ command parsing(char *line)
 		switch (line[i])
 		{
 			case '>':
-				if (output_redirector_state(line, args.output_file, &i) != 0)
+				if (output_redirector_state(line, args.output_file, args.append_file, &i) != 0)
 				{
 					args.tokens[n] = NULL;
 					args.error = 1;
@@ -109,8 +110,41 @@ command parsing(char *line)
 }
 
 
-int output_redirector_state(char *line, char *output_file, int *i)
+int append_redirector_state(char *line, char *append_file, int *i)
 {
+	unsigned int af_pos = 0;
+	while (isspace(line[*i]))
+	{
+		(*i)++;
+	}
+	while (line[*i] != '\0' && !isspace(line[*i]))
+	{
+		append_file[af_pos] = line[*i];
+		af_pos++;
+		(*i)++;
+	}
+	append_file[af_pos] = '\0';
+	if (append_file[0] == '\0')
+		return(1);
+	return(0);
+}
+
+
+int output_redirector_state(char *line, char *output_file, char *append_file, int *i)
+{
+	if (line[*i] == '>')
+	{
+		(*i)++;
+		if (line[*i] == '>')
+		{
+			(*i)++;
+			append_redirector_state(line, append_file, i);
+		}
+	}
+
+	if (append_file[0] != '\0')
+		return(0);
+
 	if (output_file[0] != '\0')
 	{
 		fp(stderr, "Can't handle second output redirector(>)\n");

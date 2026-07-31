@@ -25,6 +25,7 @@ typedef struct
 	char **tokens;
 	char input_file[256];
 	char output_file[256];
+	char append_file[256];
 	int error;
 } command;
 
@@ -35,7 +36,8 @@ typedef struct struct_builtin
 } type_builtin;
 
 command parsing(char *);
-int output_redirector_state(char *, char *, int *);
+int append_redirector_state(char *, char *, int *);
+int output_redirector_state(char *, char *, char *, int *);
 int input_redirector_state(char *, char *, int *);
 int double_quotes_state(char *, char *, unsigned int *, int *);
 int single_quotes_state(char *, char *, unsigned int *, int *);

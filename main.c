@@ -65,6 +65,7 @@ int apply_redirections(command *argv)
 		}
 		close(if_desc);
 	}
+
 	if (argv->output_file[0] != '\0')
 	{
  		int of_desc = open(argv->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
@@ -80,6 +81,23 @@ int apply_redirections(command *argv)
 			return(1);
 		}
 		close(of_desc);
+	}
+
+	if (argv->append_file[0] != '\0')
+	{
+ 		int af_desc = open(argv->append_file, O_WRONLY | O_APPEND | O_CREAT, 0644);
+		if (af_desc < 0)
+		{
+			perror("open");
+			return(1);
+		}
+		if ((dup2(af_desc, STDOUT_FILENO)) == -1)
+		{
+			perror("dup2");
+			close(af_desc);
+			return(1);
+		}
+		close(af_desc);
 	}
 	return(0);
 }
