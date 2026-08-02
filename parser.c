@@ -19,6 +19,15 @@ command parsing(char *line)
 	{
 		switch (line[i])
 		{
+			case '\\':
+				if (escape_ch_state(line, token, &tok_pos, &i) != 0)
+				{
+					args.tokens[n] = NULL;
+					args.error = 1;
+					return args;
+				}
+				break;
+
 			case '>':
 				if (output_redirector_state(line, args.output_file, args.append_file, &i) != 0)
 				{
@@ -110,6 +119,25 @@ command parsing(char *line)
 }
 
 
+int escape_ch_state(char *line, char *token, unsigned int *tok_pos, int *i)
+{
+	(*i)++;
+	if (line[*i] == '\'')
+	{
+		fp(stderr, "Parser: can't handle escape character with (')\n");
+		return(1);
+	}
+	else
+	{
+		token[*tok_pos] = line[*i];
+		(*tok_pos)++;
+		(*i)++;
+	}
+	(*i)--;
+	return(0);
+}
+
+
 int append_redirector_state(char *line, char *append_file, int *i)
 {
 	unsigned int af_pos = 0;
@@ -147,7 +175,7 @@ int output_redirector_state(char *line, char *output_file, char *append_file, in
 
 	if (output_file[0] != '\0')
 	{
-		fp(stderr, "Can't handle second output redirector(>)\n");
+		fp(stderr, "Parser: can't handle second output redirector(>)\n");
 		return(1);
 	}
 	else
@@ -175,7 +203,7 @@ int input_redirector_state(char *line, char *input_file, int *i)
 {
 	if (input_file[0] != '\0')
 	{
-		fp(stderr, "Can't handle second input redirector(<)\n");
+		fp(stderr, "Parser: can't handle second input redirector(<)\n");
 		return(1);
 	}
 	else
@@ -213,6 +241,12 @@ int double_quotes_state(char *line, char *token, unsigned int *tok_pos, int *i)
 			}
 			else
 			{
+				if (line[*i] == '\\')
+				{
+					if (escape_ch_state(line, token, tok_pos, i) != 0)
+						return(1);
+					(*i)++;
+				}
 				token[*tok_pos] = line[*i];
 				(*tok_pos)++;
 				(*i)++;

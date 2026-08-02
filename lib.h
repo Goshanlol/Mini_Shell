@@ -36,6 +36,7 @@ typedef struct struct_builtin
 } type_builtin;
 
 command parsing(char *);
+int escape_ch_state(char *, char *, unsigned int *, int *);
 int append_redirector_state(char *, char *, int *);
 int output_redirector_state(char *, char *, char *, int *);
 int input_redirector_state(char *, char *, int *);

@@ -37,7 +37,7 @@ They replicate simplified behavior of their Unix equivalents
 - [x] Environment variable expansion (`$VAR`)
 - [x] Single quotes (`'...'`)
 - [x] Double quotes (`"..."`)
-- [ ] Escape character (`\`)
+- [x] Escape character (`\`)
 - [ ] Pipes (`|`)
 - [x] Input redirection (`<`)
 - [x] Output redirection (`>`)
