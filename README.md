@@ -38,7 +38,7 @@ They replicate simplified behavior of their Unix equivalents
 - [x] Single quotes (`'...'`)
 - [x] Double quotes (`"..."`)
 - [x] Escape character (`\`)
-- [ ] Pipes (`|`)
+- [x] Pipes (`|`)
 - [x] Input redirection (`<`)
 - [x] Output redirection (`>`)
 - [x] Append redirection (`>>`)

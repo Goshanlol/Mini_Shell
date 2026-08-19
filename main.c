@@ -47,11 +47,11 @@ void history_save(char *line)
 }
 
 
-int apply_redirections(command *argv)
+int apply_redirections(command *current)
 {
-	if (argv->input_file[0] != '\0')
+	if (current->input_file[0] != '\0')
 	{
-	 	int if_desc = open(argv->input_file, O_RDONLY);
+	 	int if_desc = open(current->input_file, O_RDONLY);
 		if (if_desc < 0)
 		{
 			perror("open");
@@ -66,9 +66,9 @@ int apply_redirections(command *argv)
 		close(if_desc);
 	}
 
-	if (argv->output_file[0] != '\0')
+	if (current->output_file[0] != '\0')
 	{
- 		int of_desc = open(argv->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
+ 		int of_desc = open(current->output_file, O_WRONLY | O_CREAT | O_TRUNC, 0644);
 		if (of_desc < 0)
 		{
 			perror("open");
@@ -83,9 +83,9 @@ int apply_redirections(command *argv)
 		close(of_desc);
 	}
 
-	if (argv->append_file[0] != '\0')
+	if (current->append_file[0] != '\0')
 	{
- 		int af_desc = open(argv->append_file, O_WRONLY | O_APPEND | O_CREAT, 0644);
+ 		int af_desc = open(current->append_file, O_WRONLY | O_APPEND | O_CREAT, 0644);
 		if (af_desc < 0)
 		{
 			perror("open");
@@ -103,34 +103,112 @@ int apply_redirections(command *argv)
 }
 
 
-void general_exec(command *argv)
+void pipe_exec(command *cmd1, command *cmd2)
+{
+	int fd[2];
+
+	if (pipe(fd) == -1)
+	{
+		perror("pipe");
+		exit(EXIT_FAILURE);
+	}
+
+	pid_t pid1 = Fork();
+	if (pid1 == 0)
+	{
+		close(fd[0]);
+		if (dup2(fd[1], STDOUT_FILENO) == -1)
+		{
+			perror("dup2");
+			close(fd[1]);
+			exit(EXIT_FAILURE);
+		}
+		close(fd[1]);
+
+		// builtin_exec
+		int i = 0;
+		const char *curr;
+		while ((curr = global_builtin[i].builtin_name))
+    	{
+   	 		if (!strcmp(curr, cmd1->tokens[0]))
+   	 		{
+				apply_redirections(cmd1);
+	            status = global_builtin[i].foo(cmd1);
+	            exit(EXIT_SUCCESS);
+        	}
+        	++i;
+    	}
+    	// general_exec
+		apply_redirections(cmd1);
+		Execvp(cmd1->tokens[0], cmd1->tokens);
+	}
+
+	pid_t pid2 = Fork();
+	if (pid2 == 0)
+	{
+		close(fd[1]);
+		if (dup2(fd[0], STDIN_FILENO) == -1)
+		{
+			perror("dup2");
+			close(fd[0]);
+			exit(EXIT_FAILURE);
+		}
+		close(fd[0]);
+
+		// builtin_exec
+		int i = 0;
+		const char *curr;
+		while ((curr = global_builtin[i].builtin_name))
+    	{
+   	 		if (!strcmp(curr, cmd2->tokens[0]))
+   	 		{
+				apply_redirections(cmd2);
+	            status = global_builtin[i].foo(cmd2);
+	            exit(EXIT_SUCCESS);
+        	}
+        	++i;
+    	}
+    	// general_exec
+		apply_redirections(cmd2);
+		Execvp(cmd2->tokens[0], cmd2->tokens);
+	}
+
+	close(fd[1]);
+	close(fd[0]);
+
+	waitpid(pid1, &status, 0);
+	waitpid(pid2, &status, 0);
+}
+
+
+void general_exec(command *current)
 {
 	pid_t pid = Fork();
 
     if (pid == 0)
     {
-    	apply_redirections(argv);
-		Execvp(argv->tokens[0], argv->tokens);
+    	apply_redirections(current);
+		Execvp(current->tokens[0], current->tokens);
 	}
     else
     	Wait(&status);
 }
 
 
-void builtin_exec(command *argv)
+void builtin_exec(command *current)
 {
 	int i = 0;
 	const char *curr;
 	while ((curr = global_builtin[i].builtin_name))
     {
-        if (!strcmp(curr, argv->tokens[0]))
+        if (!strcmp(curr, current->tokens[0]))
         {
 			int org_stdout_desc = dup(STDOUT_FILENO);
 			int org_stdin_desc = dup(STDIN_FILENO);
-			apply_redirections(argv);
+			apply_redirections(current);
 			fflush(stdout);
 
-            status = global_builtin[i].foo(argv);
+            status = global_builtin[i].foo(current);
 
            	dup2(org_stdout_desc, STDOUT_FILENO);
 			dup2(org_stdin_desc, STDIN_FILENO);
@@ -140,22 +218,23 @@ void builtin_exec(command *argv)
         }
         ++i;
     }
-    general_exec(argv);
+    general_exec(current);
 }
 
 
-void free_command(command *argv)
+void free_command(command *current)
 {
-	for (int i = 0; argv->tokens[i] != NULL; i++)
-		free(argv->tokens[i]);
-	free(argv->tokens);
+	for (int i = 0; current->tokens[i] != NULL; i++)
+		free(current->tokens[i]);
+	free(current->tokens);
 }
 
 
 int main()
 {
 	char *line;
-	command argv;
+	command cmd1;
+	command cmd2;
 
 	// REPL
 	// LOOP WHILE READ LINE
@@ -165,19 +244,23 @@ int main()
 		history_save(line);
 
 		// EVALUATE
-		argv = parsing(line);
-		if (argv.error != 0)
+		int result = parsing(line, &cmd1, &cmd2);
+		if (cmd1.error != 0 || cmd2.error != 0)
 		{
 			free(line);
-			free_command(&argv);
-			continue;
-		}
+    		free_command(&cmd1);
+	    	free_command(&cmd2);
+    		continue;
+    	}
 
-		// PRINT
-		builtin_exec(&argv);
+		if (result == 0)
+			builtin_exec(&cmd1);
+		else
+			pipe_exec(&cmd1, &cmd2);
 
 		free(line);
-		free_command(&argv);
+		free_command(&cmd1);
+		free_command(&cmd2);
 	}
 	return(EXIT_SUCCESS);
 }

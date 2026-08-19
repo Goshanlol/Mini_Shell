@@ -1,75 +1,95 @@
 #include "lib.h"
 
 
-command parsing(char *line)
+int parsing(char *line, command *cmd1, command *cmd2)
 {
 	size_t bufsize = BUFSIZ;
 	unsigned int tok_pos = 0;
 	unsigned int n = 0;
 	char token[256];
+	int has_pipe = 0;
 
-	command args;
-	args.tokens = Malloc(bufsize * sizeof *args.tokens);
-	args.input_file[0] = '\0';
-	args.output_file[0] = '\0';
-	args.append_file[0] = '\0';
-	args.error = 0;
+	command *current = cmd1;
+
+	cmd1->tokens = Malloc(bufsize * sizeof *cmd1->tokens);
+	cmd1->input_file[0] = '\0';
+	cmd1->output_file[0] = '\0';
+	cmd1->append_file[0] = '\0';
+	cmd1->error = 0;
+
+	cmd2->tokens = Malloc(bufsize * sizeof *cmd2->tokens);
+	cmd2->input_file[0] = '\0';
+	cmd2->output_file[0] = '\0';
+	cmd2->append_file[0] = '\0';
+	cmd2->error = 0;
+	cmd2->tokens[0] = NULL; // To avoid a free() crush if pipe wasn't found
 
 	for (int i = 0; line[i] != '\0'; i++)
 	{
 		switch (line[i])
 		{
+			case '|':
+				i++;
+				current->tokens[n] = NULL;
+				if (pipe_state(&has_pipe, &n, &tok_pos, &current, cmd2) != 0)
+				{
+					current->tokens[n] = NULL;
+					current->error = 1;
+					return(1);
+				}
+				break;
+
 			case '\\':
 				if (escape_ch_state(line, token, &tok_pos, &i) != 0)
 				{
-					args.tokens[n] = NULL;
-					args.error = 1;
-					return args;
+					current->tokens[n] = NULL;
+					current->error = 1;
+					return(1);
 				}
 				break;
 
 			case '>':
-				if (output_redirector_state(line, args.output_file, args.append_file, &i) != 0)
+				if (output_redirector_state(line, current->output_file, current->append_file, &i) != 0)
 				{
-					args.tokens[n] = NULL;
-					args.error = 1;
-					return args;
+					current->tokens[n] = NULL;
+					current->error = 1;
+					return(1);
 				}
 				break;
 
 			case '<':
-				if (input_redirector_state(line, args.input_file, &i) != 0)
+				if (input_redirector_state(line, current->input_file, &i) != 0)
 				{
-					args.tokens[n] = NULL;
-					args.error = 1;
-					return args;
+					current->tokens[n] = NULL;
+					current->error = 1;
+					return(1);
 				}
 				break;
 
 			case '"':
 				if (double_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
-					args.tokens[n] = NULL;
-					args.error = 1;
-					return args;
+					current->tokens[n] = NULL;
+					current->error = 1;
+					return(1);
 				}
 				break;
 
 			case '\'':
 				if (single_quotes_state(line, token, &tok_pos, &i) != 0)
 				{
-					args.tokens[n] = NULL;
-					args.error = 1;
-					return args;
+					current->tokens[n] = NULL;
+					current->error = 1;
+					return(1);
 				}
 				break;
 
 			case '$':
 				if (var_expansion_state(line, token, &tok_pos, &i) != 0)
 				{
-					args.tokens[n] = NULL;
-					args.error = 1;
-					return args;
+					current->tokens[n] = NULL;
+					current->error = 1;
+					return(1);
 				}
 				break;
 
@@ -82,14 +102,14 @@ command parsing(char *line)
 					}
 					token[tok_pos] = '\0';
 
-					args.tokens[n] = Malloc(strlen(token) + 1);
-					strcpy(args.tokens[n], token);
+					current->tokens[n] = Malloc(strlen(token) + 1);
+					strcpy(current->tokens[n], token);
 					n++;
 
 					if (n >= bufsize)
         			{
             			bufsize *= 2;
-            			args.tokens = Realloc(args.tokens, bufsize * sizeof(*args.tokens));
+            			current->tokens = Realloc(current->tokens, bufsize * sizeof(*current->tokens));
         			}
         			memset(token, 0, sizeof(token));
         			tok_pos = 0;
@@ -105,17 +125,32 @@ command parsing(char *line)
 	{
 		token[tok_pos] = '\0';
 
-		args.tokens[n] = Malloc(strlen(token) + 1);
-		strcpy(args.tokens[n], token);
+		current->tokens[n] = Malloc(strlen(token) + 1);
+		strcpy(current->tokens[n], token);
 		n++;
 		if (n >= bufsize)
     	{
     		bufsize *= 2;
-        	args.tokens = Realloc(args.tokens, bufsize * sizeof(*args.tokens));
+        	current->tokens = Realloc(current->tokens, bufsize * sizeof(*current->tokens));
     	}
 	}
-	args.tokens[n] = NULL;
-	return args;
+	current->tokens[n] = NULL;
+	return has_pipe;
+}
+
+
+int pipe_state(int *has_pipe, unsigned int *n, unsigned int *tok_pos, command **current, command *cmd2)
+{
+	if (*has_pipe)
+	{
+		fp(stderr, "Parser: can't handle second pipe(|)\n");
+		return(1);
+	}
+	*has_pipe = 1;
+	*n = 0;
+	*tok_pos = 0;
+	*current = cmd2;
+	return(0);
 }
 
 

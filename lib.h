@@ -35,7 +35,8 @@ typedef struct struct_builtin
     int (*foo)(command *);
 } type_builtin;
 
-command parsing(char *);
+int parsing(char *, command *, command *);
+int pipe_state(int *, unsigned int *, unsigned int *, command **, command *);
 int escape_ch_state(char *, char *, unsigned int *, int *);
 int append_redirector_state(char *, char *, int *);
 int output_redirector_state(char *, char *, char *, int *);

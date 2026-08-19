@@ -1,8 +1,8 @@
 #include "lib.h"
 
-int cmd_cd(command *argv)
+int cmd_cd(command *current)
 {
-	const char *path = argv->tokens[1];
+	const char *path = current->tokens[1];
 
 	if (!path)
 	{
@@ -14,24 +14,24 @@ int cmd_cd(command *argv)
 
 extern char **environ;
 
-int cmd_env(command *argv)
+int cmd_env(command *current)
 {
-	(void)argv;
+	(void)current;
 
-    for (char **current = environ; *current; current++)
+    for (char **curr = environ; *curr; curr++)
     {
-        puts(*current);
+        puts(*curr);
     }
     return (EXIT_SUCCESS);
 }
 
 
-int cmd_echo(command *argv)
+int cmd_echo(command *current)
 {
-	for (int i = 1; argv->tokens[i] != NULL; i++)
+	for (int i = 1; current->tokens[i] != NULL; i++)
 	{
-		p("%s", argv->tokens[i]);
-		if (argv->tokens[i+1] != NULL)
+		p("%s", current->tokens[i]);
+		if (current->tokens[i+1] != NULL)
 		{
 			p(" ");
 		}
@@ -41,9 +41,9 @@ int cmd_echo(command *argv)
 }
 
 
-int cmd_history(command *argv)
+int cmd_history(command *current)
 {
-    (void)argv;
+    (void)current;
     FILE *file;
     char line[2048];
 
@@ -64,9 +64,9 @@ int cmd_history(command *argv)
 }
 
 
-int cmd_exit(command *argv)
+int cmd_exit(command *current)
 {
-	(void)argv;
+	(void)current;
 
 	exit(EXIT_SUCCESS);
 }
