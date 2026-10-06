@@ -42,7 +42,7 @@ They replicate simplified behavior of their Unix equivalents
 - [x] Input redirection (`<`)
 - [x] Output redirection (`>`)
 - [x] Append redirection (`>>`)
-- [ ] Here-document (`<<`)
+- [x] Here-document (`<<`)
 
 
 ## How to install this project
@@ -70,4 +70,4 @@ As I'm a beginner in C, there could possibly be a lot of bugs, so please share w
 ## Known issues
 
 ## Currently working on
-Enhancing parser so it can handle different cases like $, <>, | etc.
+Finished.

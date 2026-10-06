@@ -26,6 +26,7 @@ typedef struct
 	char input_file[256];
 	char output_file[256];
 	char append_file[256];
+	char heredoc_del[256];
 	int error;
 } command;
 
@@ -35,12 +36,14 @@ typedef struct struct_builtin
     int (*foo)(command *);
 } type_builtin;
 
+
 int parsing(char *, command *, command *);
 int pipe_state(int *, unsigned int *, unsigned int *, command **, command *);
 int escape_ch_state(char *, char *, unsigned int *, int *);
 int append_redirector_state(char *, char *, int *);
 int output_redirector_state(char *, char *, char *, int *);
-int input_redirector_state(char *, char *, int *);
+int here_document_state(char *, char *, int *);
+int input_redirector_state(char *, char *, char *, int *);
 int double_quotes_state(char *, char *, unsigned int *, int *);
 int single_quotes_state(char *, char *, unsigned int *, int *);
 int var_expansion_state(char *, char *, unsigned int *, int *);

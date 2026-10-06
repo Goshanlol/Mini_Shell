@@ -15,12 +15,14 @@ int parsing(char *line, command *cmd1, command *cmd2)
 	cmd1->input_file[0] = '\0';
 	cmd1->output_file[0] = '\0';
 	cmd1->append_file[0] = '\0';
+	cmd1->heredoc_del[0] = '\0';
 	cmd1->error = 0;
 
 	cmd2->tokens = Malloc(bufsize * sizeof *cmd2->tokens);
 	cmd2->input_file[0] = '\0';
 	cmd2->output_file[0] = '\0';
 	cmd2->append_file[0] = '\0';
+	cmd2->heredoc_del[0] = '\0';
 	cmd2->error = 0;
 	cmd2->tokens[0] = NULL; // To avoid a free() crush if pipe wasn't found
 
@@ -58,7 +60,7 @@ int parsing(char *line, command *cmd1, command *cmd2)
 				break;
 
 			case '<':
-				if (input_redirector_state(line, current->input_file, &i) != 0)
+				if (input_redirector_state(line, current->input_file, current->heredoc_del, &i) != 0)
 				{
 					current->tokens[n] = NULL;
 					current->error = 1;
@@ -180,7 +182,7 @@ int append_redirector_state(char *line, char *append_file, int *i)
 	{
 		(*i)++;
 	}
-	while (line[*i] != '\0' && !isspace(line[*i]))
+	while (line[*i] != '\0' && !isspace(line[*i])) //HERE
 	{
 		append_file[af_pos] = line[*i];
 		af_pos++;
@@ -221,7 +223,7 @@ int output_redirector_state(char *line, char *output_file, char *append_file, in
 	{
 		(*i)++;
 	}
-	while (line[*i] != '\0' && !isspace(line[*i]))
+	while (line[*i] != '\0' && !isspace(line[*i])) //HERE
 	{
 		output_file[of_pos] = line[*i];
 		of_pos++;
@@ -234,8 +236,45 @@ int output_redirector_state(char *line, char *output_file, char *append_file, in
 }
 
 
-int input_redirector_state(char *line, char *input_file, int *i)
+int here_document_state(char *line, char *heredoc_del, int *i)
 {
+	(*i)++;
+	unsigned int del_pos = 0;
+
+	while (isspace(line[*i]))
+		(*i)++;
+
+	while (line[*i] != '\0' && !isspace(line[*i])) //HERE
+	{
+		heredoc_del[del_pos] = line[*i];
+		del_pos++;
+		(*i)++;
+	}
+	heredoc_del[del_pos] = '\n';
+
+	if (heredoc_del[0] == '\0')
+	{
+		fp(stderr, "Parser: didn't find EOF delimiter\n");
+		return(1);
+	}
+	return(0);
+}
+
+
+int input_redirector_state(char *line, char *input_file, char *heredoc_del, int *i)
+{
+	if (line[*i] == '<')
+	{
+		(*i)++;
+		if (line[*i] == '<')
+		{
+			here_document_state(line, heredoc_del, i);
+		}
+	}
+
+	if (heredoc_del[0] != '\0')
+		return(0);
+
 	if (input_file[0] != '\0')
 	{
 		fp(stderr, "Parser: can't handle second input redirector(<)\n");
@@ -269,7 +308,7 @@ int double_quotes_state(char *line, char *token, unsigned int *tok_pos, int *i)
 	{
 		if (line[*i] != '$')
 		{
-			if (line[*i] == '\0')
+			if (line[*i] == '\0') //HERE (or not?)
 			{
 				fp(stderr, "Parser: didn't find closing quote\n");
 				return(1);
