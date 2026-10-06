@@ -99,26 +99,6 @@ void Execvp(const char *file, char *const argv[])
 }
 
 
-pid_t Wait(int *status)
-{
-	pid_t pid;
-
-	if (!status)
-	{
-		fp(stderr, "Wait: status argument required\n");
-		return (-1);
-	}
-
-	pid = wait(status);
-
-	if (pid == -1)
-	{
-		perror("wait");
-	}
-	return (pid);
-}
-
-
 int Chdir(const char *path)
 {
     if (chdir(path) == 0)
